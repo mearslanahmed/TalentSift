@@ -53,6 +53,16 @@ const Job = () => {
         return rawId || "";
     }, [routeParams]);
 
+    const getAuthHeaders = () => {
+        const token = typeof window !== "undefined"
+            ? (localStorage.getItem("access") || sessionStorage.getItem("access"))
+            : null;
+        return {
+            withCredentials: true,
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+        };
+    };
+
     useEffect(() => {
         dispatch(show_search(false));
     }, [dispatch]);
@@ -64,13 +74,13 @@ const Job = () => {
 
         const fetchJobDetails = async () => {
             try {
-                const response = await axios.get(`${API_BASE_URL}/get_jobs/${jobId}/`, { withCredentials: true });
+                const response = await axios.get(`${API_BASE_URL}/get_jobs/${jobId}/`, getAuthHeaders());
                 setJob(response.data);
                 if (typeof window !== "undefined" && response.data?.job_name) {
                     document.title = `${response.data.job_name} | TalentSift`;
                 }
                 try {
-                    const response1 = await axios.get(`${API_BASE_URL}/check_report_status/${jobId}/`, { withCredentials: true });
+                    const response1 = await axios.get(`${API_BASE_URL}/check_report_status/${jobId}/`, getAuthHeaders());
                     setreport(response1.data.message);
                 } catch (reportErr) {
                     setreport("No");
@@ -94,7 +104,7 @@ const Job = () => {
             }
 
             try {
-                const profileResponse = await axios.get(`${API_BASE_URL}/profile/`, { withCredentials: true });
+                const profileResponse = await axios.get(`${API_BASE_URL}/profile/`, getAuthHeaders());
                 const candidateResume = profileResponse.data?.candidate?.resume || "";
                 setProfileResume(candidateResume);
                 if (candidateResume) {
@@ -105,9 +115,7 @@ const Job = () => {
             }
 
             try {
-                const statusResponse = await axios.get(`${API_BASE_URL}/check_application_status/${jobId}/`, {
-                    withCredentials: true,
-                });
+                const statusResponse = await axios.get(`${API_BASE_URL}/check_application_status/${jobId}/`, getAuthHeaders());
                 setHasApplied(statusResponse.data?.message === "Yes");
             } catch (error) {
                 console.warn("Failed to check application status:", error);
@@ -127,7 +135,7 @@ const Job = () => {
             await axios.post(
                 `${API_BASE_URL}/report/`,
                 { job_id: jobId, feedback },
-                { withCredentials: true }
+                getAuthHeaders()
             );
             setShowModal(false); // Close modal after reporting
             setFeedback(""); // Clear feedback input
@@ -167,9 +175,7 @@ const Job = () => {
                 formData.append("resume", resumeFile);
             }
 
-            const response = await axios.post(`${API_BASE_URL}/apply-job/${jobId}/`, formData, {
-                withCredentials: true,
-            });
+            const response = await axios.post(`${API_BASE_URL}/apply-job/${jobId}/`, formData, getAuthHeaders());
 
             setHasApplied(true);
             setShowApplyModal(false);

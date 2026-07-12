@@ -5,6 +5,7 @@
     import { usePathname, useRouter } from 'next/navigation';
     import { Auth } from '@/Redux/Action';
     import Loader from './loader';
+    import { setAuthToken } from './auth';
 
 
     const Protect = ({ children }) => {
@@ -13,6 +14,16 @@
         const dispatch = useDispatch();
         const pathname = usePathname();
         const route = useRouter();
+
+        useEffect(() => {
+            if (typeof window !== 'undefined') {
+                const token = localStorage.getItem('access') || sessionStorage.getItem('access');
+                if (token) {
+                    setAuthToken(token);
+                }
+            }
+        }, []);
+
         useEffect(() => {
             const checkAuth = async () => {
                 try {

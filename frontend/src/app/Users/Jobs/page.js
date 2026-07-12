@@ -34,9 +34,17 @@ const CandidateJobs = () => {
         const fetchJobs = async () => {
             setLoading(true);
             try {
+                const token = typeof window !== "undefined"
+                    ? (localStorage.getItem("access") || sessionStorage.getItem("access"))
+                    : null;
+                const opts = { withCredentials: true };
+                if (token) {
+                    opts.headers = { Authorization: `Bearer ${token}` };
+                }
+
                 const response = await axios.get(
                     `${API_BASE_URL}/get_all_job?page=${currentPage}&search=${searchTerm}`,
-                    { withCredentials: true }
+                    opts
                 );
 
                 if (!isActive) {
